@@ -46,8 +46,7 @@ const guardarPropiedad = async (req, res, next) => {
   }
 
   // Crear el registro
-  const { _token } = req.cookies;
-  const { id: usuarioId } = jwt.verify(_token, process.env.JWT_SECRET);
+  const { id: usuarioId } = req.usuario;
 
   const {
     titulo,
@@ -63,7 +62,7 @@ const guardarPropiedad = async (req, res, next) => {
   } = req.body;
 
   try {
-    const propiedadGuardar = await Propiedad.create({
+    const propiedadGuardada = await Propiedad.create({
       titulo,
       descripcion,
       habitaciones,
@@ -75,8 +74,10 @@ const guardarPropiedad = async (req, res, next) => {
       precioId,
       categoriaId,
       usuarioId,
-      img: "NADA POR EL MOMENTO"
+      img: "NADA POR EL MOMENTO",
     });
+
+    res.redirect("/propiedades/agregar-imagen/".concat(usuarioId));
   } catch (error) {
     console.log(error);
   }
