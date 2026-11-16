@@ -1,0 +1,19 @@
+extends ../layout/auth
+
+//- Pantalla de aviso después de una acción (ej. cuenta creada)
+//- Recibe: pagina, mensaje y, opcionalmente, email
+block contenido
+  div(class="text-center")
+    div(class="mx-auto flex size-16 items-center justify-center rounded-full bg-bosque-50 text-bosque-700 ring-8 ring-bosque-50/50")
+      svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-8" aria-hidden="true")
+        path(stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75")
+
+    h1(class="mt-8 font-display text-4xl")= pagina
+    p(class="mt-4 text-bosque-900/70")= mensaje
+
+    if email
+      p(class="mt-6 inline-block rounded-full bg-arena-100 px-4 py-2 text-sm font-semibold text-bosque-800")= email
+
+    p(class="mt-6 text-sm text-bosque-900/50") Si no lo ves en unos minutos, revisa tu carpeta de spam.
+
+  a(href="/auth/login" class="mt-10 flex w-full items-center justify-center gap-2 rounded-full border border-bosque-900/15 px-6 py-3.5 font-semibold text-bosque-900 transition hover:bg-arena-100") Ir a iniciar sesión

@@ -1,0 +1,29 @@
+extends index
+
+block body
+  div(class="grid min-h-screen lg:grid-cols-2")
+    //- Panel de marca (solo en pantallas grandes)
+    aside(class="relative hidden overflow-hidden bg-bosque-900 p-12 text-arena-50 lg:flex lg:flex-col lg:justify-between")
+      a(href="/" class="relative z-10 font-display text-2xl") Bienes#[span(class="text-terracota-400") Raíces]
+
+      div(class="relative z-10 max-w-md")
+        p(class="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-terracota-400") Tu próximo hogar
+        p(class="font-display text-5xl leading-tight") Encuentra el lugar donde quieres vivir.
+        p(class="mt-6 text-lg text-arena-200/80") Casas, departamentos y terrenos publicados por propietarios reales.
+
+      p(class="relative z-10 text-sm text-arena-200/60") © #{new Date().getFullYear()} Bienes Raíces
+
+      //- Siluetas de casas decorativas
+      svg(class="pointer-events-none absolute inset-x-0 bottom-0 w-full text-bosque-700" viewBox="0 0 600 200" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" preserveAspectRatio="xMidYMax slice" aria-hidden="true")
+        path(d="M0 199 H600")
+        path(d="M30 199 V140 L80 100 L130 140 V199 M65 199 V165 H95 V199")
+        path(d="M150 199 V70 H220 V199 M165 90 H180 M190 90 H205 M165 115 H180 M190 115 H205 M165 140 H180 M190 140 H205")
+        path(d="M240 199 V130 L290 95 L340 130 V199 M275 145 H305 V170 H275 Z")
+        path(d="M360 199 V100 H410 V60 H460 V199 M375 120 H395 M425 80 H445 M425 105 H445 M425 130 H445")
+        path(d="M480 199 V145 L530 110 L580 145 V199 M515 199 V170 H545 V199")
+
+    //- Zona del formulario
+    main(class="flex items-center justify-center px-6 py-12 sm:px-12")
+      div(class="w-full max-w-sm")
+        a(href="/" class="mb-10 block font-display text-2xl lg:hidden") Bienes#[span(class="text-terracota-500") Raíces]
+        block contenido

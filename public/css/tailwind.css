@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* Archivos donde Tailwind busca las clases que usas */
+@source "../../views";
+
+/* Paleta y tipografías del proyecto: generan clases como bg-bosque-900, text-terracota-500, font-display */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+
+  --color-arena-50: #faf7f2;
+  --color-arena-100: #f3ede3;
+  --color-arena-200: #e6dccb;
+
+  --color-bosque-50: #edf5f1;
+  --color-bosque-700: #1f5a45;
+  --color-bosque-800: #174535;
+  --color-bosque-900: #0f2f24;
+
+  --color-terracota-400: #e0915a;
+  --color-terracota-500: #d2773c;
+  --color-terracota-600: #b8612b;
+
+  /* Estados de validación */
+  --color-error-50: #fdf3f1;
+  --color-error-500: #c8442f;
+  --color-error-600: #a83724;
+  --color-error-700: #8a2c1d;
+
+  /* Sacudida corta para campos con error (clase: animate-sacudir) */
+  --animate-sacudir: sacudir 0.35s ease-in-out;
+
+  @keyframes sacudir {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+  }
+}

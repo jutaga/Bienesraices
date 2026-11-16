@@ -1,0 +1,21 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (contraseñas, claves, datos de la BD)
+.env
+.env.*
+
+# Archivos generados (se crean con npm run css / npm run js)
+public/css/app.css
+public/js/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

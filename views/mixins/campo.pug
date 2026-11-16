@@ -1,0 +1,127 @@
+//- Campo de formulario reutilizable
+//- Uso: +campo("email", "Email", "email", "ejemplo@correo.com", "email")
+//-
+//- Lee automáticamente desde la vista:
+//-   errores -> arreglo de express-validator: [{ path: "email", msg: "..." }]
+//-   datos   -> datos enviados, para no borrar lo que el usuario escribió
+//-              (también acepta `usuario`, que usan los formularios de auth)
+//- Si el campo tiene error se pinta en rojo con su mensaje; si el formulario
+//- se envió con errores pero este campo está bien, se pinta en verde.
+mixin campo(id, etiqueta, tipo, placeholder, autocomplete)
+  - const errores = locals.errores || []
+  - const error = errores.find((e) => e.path === id)
+  - const datos = locals.datos || locals.usuario
+  - const valor = tipo !== "password" && datos ? datos[id] : undefined
+  - const valido = errores.length > 0 && !error && valor
+  - const base = "w-full rounded-xl border px-4 py-3 text-bosque-900 shadow-sm transition placeholder:text-bosque-900/40 focus:outline-none focus:ring-4"
+  - const estado = error ? "border-error-500 bg-error-50/40 pr-11 focus:border-error-500 focus:ring-error-500/15 motion-safe:animate-sacudir" : valido ? "border-bosque-700/50 bg-white pr-11 focus:border-bosque-700 focus:ring-bosque-700/15" : "border-arena-200 bg-white focus:border-terracota-500 focus:ring-terracota-500/15"
+
+  div
+    label(for=id class=(error ? "mb-1.5 block text-sm font-medium text-error-600" : "mb-1.5 block text-sm font-medium text-bosque-800"))= etiqueta
+    div(class="relative")
+      input(
+        id=id
+        name=id
+        type=tipo
+        placeholder=placeholder
+        autocomplete=autocomplete
+        value=valor
+        aria-invalid=(error ? "true" : undefined)
+        aria-describedby=(error ? `${id}-error` : undefined)
+        class=`${base} ${estado}`
+      )
+      if error
+        span(class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-error-500" aria-hidden="true")
+          svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5")
+            path(fill-rule="evenodd" clip-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z")
+      else if valido
+        span(class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-bosque-700" aria-hidden="true")
+          svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5")
+            path(fill-rule="evenodd" clip-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.061 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z")
+    if error
+      p(id=`${id}-error` class="mt-1.5 text-sm font-medium text-error-600")= error.msg
+
+//- Área de texto con el mismo estilo y validación que +campo
+//- Uso: +areaTexto("descripcion", "Descripción", "Describe la propiedad", 5)
+mixin areaTexto(id, etiqueta, placeholder, filas)
+  - const errores = locals.errores || []
+  - const error = errores.find((e) => e.path === id)
+  - const datos = locals.datos || locals.usuario
+  - const valor = datos ? datos[id] : undefined
+  - const valido = errores.length > 0 && !error && valor
+  - const base = "block w-full resize-y rounded-xl border px-4 py-3 text-bosque-900 shadow-sm transition placeholder:text-bosque-900/40 focus:outline-none focus:ring-4"
+  - const estado = error ? "border-error-500 bg-error-50/40 focus:border-error-500 focus:ring-error-500/15 motion-safe:animate-sacudir" : valido ? "border-bosque-700/50 bg-white focus:border-bosque-700 focus:ring-bosque-700/15" : "border-arena-200 bg-white focus:border-terracota-500 focus:ring-terracota-500/15"
+
+  div
+    label(for=id class=(error ? "mb-1.5 block text-sm font-medium text-error-600" : "mb-1.5 block text-sm font-medium text-bosque-800"))= etiqueta
+    textarea(
+      id=id
+      name=id
+      rows=(filas || 4)
+      placeholder=placeholder
+      aria-invalid=(error ? "true" : undefined)
+      aria-describedby=(error ? `${id}-error` : undefined)
+      class=`${base} ${estado}`
+    )= valor
+    if error
+      p(id=`${id}-error` class="mt-1.5 text-sm font-medium text-error-600")= error.msg
+
+//- Lista desplegable con el mismo estilo y validación que +campo
+//- Uso: +selector("categoria", "Categoría", [{ valor: 1, texto: "Casa" }], "Selecciona")
+mixin selector(id, etiqueta, opciones, placeholder)
+  - const errores = locals.errores || []
+  - const error = errores.find((e) => e.path === id)
+  - const datos = locals.datos || locals.usuario
+  - const valor = datos ? datos[id] : undefined
+  - const valido = errores.length > 0 && !error && valor
+  - const base = "w-full cursor-pointer appearance-none rounded-xl border py-3 pl-4 pr-11 text-bosque-900 shadow-sm transition focus:outline-none focus:ring-4"
+  - const estado = error ? "border-error-500 bg-error-50/40 focus:border-error-500 focus:ring-error-500/15 motion-safe:animate-sacudir" : valido ? "border-bosque-700/50 bg-white focus:border-bosque-700 focus:ring-bosque-700/15" : "border-arena-200 bg-white focus:border-terracota-500 focus:ring-terracota-500/15"
+
+  div
+    label(for=id class=(error ? "mb-1.5 block text-sm font-medium text-error-600" : "mb-1.5 block text-sm font-medium text-bosque-800"))= etiqueta
+    div(class="relative")
+      select(
+        id=id
+        name=id
+        aria-invalid=(error ? "true" : undefined)
+        aria-describedby=(error ? `${id}-error` : undefined)
+        class=`${base} ${estado}`
+      )
+        option(value="" selected=!valor)= placeholder || "Selecciona"
+        each opcion in opciones
+          option(value=opcion.valor selected=(String(opcion.valor) === String(valor)))= opcion.texto
+      span(class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-bosque-900/50" aria-hidden="true")
+        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5")
+          path(fill-rule="evenodd" clip-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z")
+    if error
+      p(id=`${id}-error` class="mt-1.5 text-sm font-medium text-error-600")= error.msg
+
+//- Alerta general sobre el formulario
+//- Muestra un resumen cuando hay errores y lista los que no pertenecen
+//- a un campo (ej. { msg: "El usuario ya está registrado" }).
+//- Si la vista recibe `mensaje` (ej. "Usuario creado correctamente")
+//- muestra una alerta de éxito en verde.
+mixin alerta()
+  - const errores = locals.errores || []
+  - const generales = errores.filter((e) => !e.path)
+  if locals.mensaje && !errores.length
+    div(role="status" class="flex gap-3 rounded-xl border border-bosque-700/25 bg-bosque-50 px-4 py-3 text-sm text-bosque-800")
+      svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="mt-0.5 size-5 shrink-0 text-bosque-700" aria-hidden="true")
+        path(fill-rule="evenodd" clip-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.061 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z")
+      p(class="font-medium")= locals.mensaje
+  if errores.length
+    div(role="alert" class="flex gap-3 rounded-xl border border-error-500/25 bg-error-50 px-4 py-3 text-sm text-error-700")
+      svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="mt-0.5 size-5 shrink-0 text-error-500" aria-hidden="true")
+        path(fill-rule="evenodd" clip-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z")
+      div
+        if generales.length
+          each e in generales
+            p(class="font-medium")= e.msg
+        else
+          p(class="font-medium") Revisa los campos marcados en rojo.
+
+//- Botón principal
+mixin boton(texto)
+  button(type="submit" class="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-bosque-900 px-6 py-3.5 font-semibold text-arena-50 transition hover:bg-bosque-800 focus:outline-none focus:ring-4 focus:ring-bosque-900/20")
+    = texto
+    span(class="transition-transform group-hover:translate-x-1" aria-hidden="true") →

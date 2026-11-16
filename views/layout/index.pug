@@ -1,0 +1,23 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Bienes Raíces | #{pagina}
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap")
+    link(rel="stylesheet" href="/css/app.css")
+    //- Hojas de estilo extra que necesite cada página (ej. el mapa)
+    block styles
+  body(class="min-h-screen bg-arena-50 font-sans text-bosque-900 antialiased")
+    //- Estructura por defecto para páginas normales.
+    //- Las páginas de autenticación la reemplazan desde layout/auth.pug
+    block body
+      include header
+
+      main(class="container mx-auto px-4 py-10")
+        block contenido
+
+    //- Scripts extra que necesite cada página (van al final para no frenar la carga)
+    block scripts

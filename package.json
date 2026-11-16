@@ -1,0 +1,43 @@
+{
+  "name": "bienesraices_mvc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon index.js",
+    "css": "postcss public/css/tailwind.css -o public/css/app.css --watch",
+    "js": "webpack --watch",
+    "js:build": "webpack --mode production",
+    "dev": "concurrently -n server,css,js -c green,cyan,yellow \"npm:server\" \"npm:css\" \"npm:js\"",
+    "db:importar": "node seed/seeder.js -i",
+    "db:eliminar": "node seed/seeder.js -e"
+  },
+  "keywords": [],
+  "author": "Juan pablo",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "csurf": "^1.11.0",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "express-validator": "^7.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.24.6",
+    "nodemailer": "^10.4.0",
+    "pug": "^3.0.4",
+    "sequelize": "^6.37.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.4",
+    "concurrently": "^10.0.7",
+    "nodemon": "^3.1.14",
+    "postcss": "^8.5.32",
+    "postcss-cli": "^12.0.0",
+    "tailwindcss": "^4.3.4",
+    "webpack": "^5.112.2",
+    "webpack-cli": "^7.3.1"
+  }
+}

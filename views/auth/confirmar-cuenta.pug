@@ -1,0 +1,30 @@
+extends ../layout/auth
+
+//- Resultado de abrir el enlace del email de confirmación
+//- Recibe: pagina, mensaje y error (true si el token no es válido)
+block contenido
+  div(class="text-center")
+    if error
+      div(class="mx-auto flex size-16 items-center justify-center rounded-full bg-error-50 text-error-500 ring-8 ring-error-50/50")
+        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-8" aria-hidden="true")
+          path(stroke-linecap="round" stroke-linejoin="round" d="M13.181 8.68a4.503 4.503 0 0 1 1.903 6.405m-9.768-2.782L3.56 14.06a4.5 4.5 0 0 0 6.364 6.365l3.129-3.129m5.614-5.615 1.757-1.757a4.5 4.5 0 0 0-6.364-6.365l-4.5 4.5c-.258.26-.479.541-.661.84m1.903 6.405a4.495 4.495 0 0 1-1.242-.88 4.483 4.483 0 0 1-1.062-1.683m6.587 2.345 5.907 5.907m-5.907-5.907L8.898 8.898M2.991 2.99 8.898 8.9")
+    else
+      div(class="mx-auto flex size-16 items-center justify-center rounded-full bg-bosque-50 text-bosque-700 ring-8 ring-bosque-50/50")
+        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-8" aria-hidden="true")
+          path(stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9Z")
+
+    h1(class="mt-8 font-display text-4xl")= pagina
+    p(class=(error ? "mt-4 font-medium text-error-600" : "mt-4 text-bosque-900/70"))= mensaje
+
+    if error
+      p(class="mt-4 text-sm text-bosque-900/60") Es posible que el enlace ya se haya usado o esté incompleto. Si ya confirmaste tu cuenta, simplemente inicia sesión.
+    else
+      p(class="mt-4 text-sm text-bosque-900/60") Ya puedes iniciar sesión y empezar a publicar y encontrar propiedades.
+
+  div(class="mt-10 space-y-3")
+    a(href="/auth/login" class="group flex w-full items-center justify-center gap-2 rounded-full bg-bosque-900 px-6 py-3.5 font-semibold text-arena-50 transition hover:bg-bosque-800 focus:outline-none focus:ring-4 focus:ring-bosque-900/20")
+      | Iniciar sesión
+      span(class="transition-transform group-hover:translate-x-1" aria-hidden="true") →
+
+    if error
+      a(href="/auth/registro" class="flex w-full items-center justify-center rounded-full border border-bosque-900/15 px-6 py-3.5 font-semibold text-bosque-900 transition hover:bg-arena-100") Crear una cuenta nueva
