@@ -36,6 +36,19 @@ const Usuario = db.define(
         }
       },
     },
+    scopes: {
+      eliminarPassword: {
+        attributes: {
+          exclude: [
+            "password",
+            "token",
+            "confirmado",
+            "createdAt",
+            "updatedAt",
+          ],
+        },
+      },
+    },
   },
 );
 
