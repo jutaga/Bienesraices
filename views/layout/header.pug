@@ -1,4 +1,9 @@
-//- Cabecera general del sitio (se incluye desde layout/index.pug)
+//- Cabecera del área pública (se incluye desde layout/index.pug)
 header(class="border-b border-arena-200 bg-white")
-  div(class="container mx-auto flex items-center justify-between px-4 py-5")
+  div(class="container mx-auto flex items-center justify-between gap-4 px-4 py-5")
     a(href="/" class="font-display text-2xl") Bienes#[span(class="text-terracota-500") Raíces]
+
+    nav(class="flex items-center gap-2 sm:gap-3" aria-label="Principal")
+      a(href="/" class="hidden rounded-full px-4 py-2 text-sm font-medium text-bosque-900/70 transition hover:bg-arena-100 hover:text-bosque-900 sm:block") Inicio
+      a(href="/auth/login" class="rounded-full px-4 py-2 text-sm font-medium text-bosque-900/70 transition hover:bg-arena-100 hover:text-bosque-900") Iniciar sesión
+      a(href="/auth/registro" class="rounded-full bg-bosque-900 px-4 py-2 text-sm font-semibold text-arena-50 transition hover:bg-bosque-800") Crear cuenta
