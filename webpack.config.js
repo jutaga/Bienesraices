@@ -16,6 +16,7 @@ export default {
   // La clave (mapa) es el nombre del archivo que se genera: public/js/mapa.js
   entry: {
     mapa: "./src/js/mapa.js",
+    agregarImagen : "./src/js/agregarImagen.js"
   },
 
   output: {

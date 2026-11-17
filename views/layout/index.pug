@@ -14,7 +14,10 @@ html(lang="es")
     //- Estructura por defecto para páginas normales.
     //- Las páginas de autenticación la reemplazan desde layout/auth.pug
     block body
-      include header
+      //- Cabecera pública por defecto.
+      //- layout/admin.pug la reemplaza por la del panel de administración
+      block header
+        include header
 
       main(class="container mx-auto px-4 py-10")
         block contenido

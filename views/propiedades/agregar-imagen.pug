@@ -1,0 +1,135 @@
+extends ../layout/admin
+
+//- Paso 2 de la publicación: subir la imagen de la propiedad
+//- Recibe: pagina, csrfToken y propiedad ({ id, titulo })
+//-
+//- La subida la hace Dropzone (tu JS). El formulario #imagen ya tiene
+//- la clase "dropzone" y la URL a donde enviar el archivo.
+//- Ojo con CSRF: Dropzone envía multipart/form-data y csurf no lee el body
+//- de esos envíos, así que el token tiene que ir como cabecera:
+//-   headers: { "CSRF-Token": document.querySelector('input[name="_csrf"]').value }
+block contenido
+  - const propiedad = locals.propiedad || {}
+
+  div(class="mx-auto max-w-3xl")
+    a(href="/mis-propiedades" class="inline-flex items-center gap-1 text-sm font-medium text-bosque-900/60 hover:text-terracota-600")
+      span(aria-hidden="true") ←
+      | Volver a mis propiedades
+
+    //- Pasos de la publicación
+    ol(class="mt-6 flex items-center gap-3 text-sm font-medium" aria-label="Pasos de la publicación")
+      li(class="flex items-center gap-2 text-bosque-700")
+        span(class="flex size-6 items-center justify-center rounded-full bg-bosque-700 text-arena-50" aria-hidden="true")
+          svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4")
+            path(fill-rule="evenodd" clip-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z")
+        | Información
+      li(class="h-px w-8 bg-arena-200" aria-hidden="true")
+      li(class="flex items-center gap-2 text-bosque-900" aria-current="step")
+        span(class="flex size-6 items-center justify-center rounded-full bg-terracota-500 text-xs font-semibold text-white") 2
+        | Imagen
+
+    p(class="mt-6 mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-terracota-500") Último paso
+    h1(class="font-display text-4xl")= pagina
+    if propiedad.titulo
+      p(class="mt-2 text-bosque-900/60") Sube la foto principal de #[span(class="font-semibold text-bosque-900")= propiedad.titulo].
+    else
+      p(class="mt-2 text-bosque-900/60") Sube la foto principal de tu propiedad.
+
+    section(class="mt-10 space-y-6 rounded-2xl border border-arena-200 bg-white p-6 shadow-sm sm:p-8")
+      div
+        h2(class="font-display text-2xl") Imagen principal
+        p(class="mt-1 text-sm text-bosque-900/60") Es lo primero que verán los interesados. Usa una foto clara y bien iluminada.
+
+      //- Zona de Dropzone
+      form(
+        id="imagen"
+        method="POST"
+        action=`/propiedades/agregar-imagen/${propiedad.id}`
+        enctype="multipart/form-data"
+        class="dropzone"
+      )
+        input(type="hidden" name="_csrf" value=csrfToken)
+
+        //- Mensaje que muestra Dropzone mientras no hay archivo
+        div(class="dz-message")
+          span(class="mx-auto flex size-14 items-center justify-center rounded-full bg-arena-100 text-terracota-500" aria-hidden="true")
+            svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-7")
+              path(stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z")
+          p(class="mt-4 font-semibold text-bosque-900") Arrastra tu imagen aquí
+          p(class="mt-1 text-sm text-bosque-900/60") o #[span(class="font-semibold text-terracota-600 underline") haz clic para buscarla]
+          p(class="mt-3 text-xs text-bosque-900/50") JPG o PNG · máximo 5 MB · 1 imagen
+
+      //- Errores que quieras mostrar desde tu JS (ej. archivo muy grande)
+      p(id="imagen-error" class="hidden text-sm font-medium text-error-600" role="alert")
+
+      //- Mensaje de éxito: tu JS le quita "hidden" cuando la imagen se sube bien
+      div(id="imagen-exito" class="hidden items-start gap-3 rounded-xl border border-bosque-700/25 bg-bosque-50 px-4 py-3 text-sm text-bosque-800" role="status")
+        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="mt-0.5 size-5 shrink-0 text-bosque-700" aria-hidden="true")
+          path(fill-rule="evenodd" clip-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.061 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z")
+        div
+          p(class="font-semibold") La imagen se subió correctamente
+          p(class="mt-0.5 text-bosque-800/80")
+            | Te llevamos a tus propiedades…
+            a(href="/mis-propiedades" class="font-semibold underline hover:text-bosque-900") Ir ahora
+
+    //- Acciones
+    div(id="acciones" class="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end")
+      a(href="/mis-propiedades" class="flex items-center justify-center rounded-full border border-bosque-900/15 px-6 py-3.5 font-semibold text-bosque-900 transition hover:bg-arena-100") Lo haré después
+      //- type="button": no envía nada solo; tu JS lo usa para subir la imagen (dropzone.processQueue())
+      button(id="publicar" type="button" class="group flex cursor-pointer items-center justify-center gap-2 rounded-full bg-bosque-900 px-6 py-3.5 font-semibold text-arena-50 transition hover:bg-bosque-800 focus:outline-none focus:ring-4 focus:ring-bosque-900/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-60")
+        | Publicar propiedad
+        span(class="transition-transform group-hover:translate-x-1" aria-hidden="true") →
+
+block styles
+  link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.css")
+  //- Ajustes para que Dropzone use los colores del sitio.
+  //- Van aquí (después de dropzone.css) para que ganen sobre sus estilos.
+  style.
+    .dropzone {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      min-height: 16rem;
+      padding: 2rem;
+      border: 2px dashed #e6dccb;
+      border-radius: 1rem;
+      background: #faf7f2;
+      cursor: pointer;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .dropzone:hover,
+    .dropzone.dz-drag-hover {
+      border-color: #d2773c;
+      background: #f3ede3;
+    }
+    .dropzone .dz-message {
+      margin: 0;
+      width: 100%;
+      text-align: center;
+    }
+    .dropzone.dz-started .dz-message {
+      display: none;
+    }
+    .dropzone .dz-preview .dz-image {
+      border-radius: 0.75rem;
+    }
+    .dropzone .dz-preview .dz-remove {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #b8612b;
+      text-decoration: none;
+    }
+    .dropzone .dz-preview .dz-remove:hover {
+      text-decoration: underline;
+    }
+    .dropzone .dz-preview .dz-progress .dz-upload {
+      background: #1f5a45;
+    }
+
+block scripts
+  //- Dropzone viene incluido dentro de este archivo (webpack lo toma de node_modules),
+  //- por eso no se carga también desde el CDN: se activaría dos veces
+  script(src="/js/agregarImagen.js")
