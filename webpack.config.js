@@ -18,6 +18,7 @@ export default {
     mapa: "./src/js/mapa.js",
     agregarImagen : "./src/js/agregarImagen.js",
     confirmarEliminar: "./src/js/confirmarEliminar.js",
+    mostrarMapa:"./src/js/mostrarMapa.js"
   },
 
   output: {
