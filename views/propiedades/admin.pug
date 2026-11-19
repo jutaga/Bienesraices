@@ -1,9 +1,22 @@
-extends ../layout/index
+extends ../layout/admin
 
 //- Panel "Mis propiedades"
-//- Recibe: pagina y, opcionalmente, propiedades
-//-   propiedades -> [{ id, titulo, precio, ubicacion, imagen, publicado }]
+//- Recibe: pagina, csrfToken y propiedades (las del usuario logueado)
+//-   Campos que usa cada propiedad (los del modelo Propiedad):
+//-     id, titulo, calle, img, publicado, habitaciones, estacionamiento, wc
+//-   Opcionales, si en el controlador haces include de las relaciones
+//-   (necesita Propiedad.belongsTo(Precio) y Propiedad.belongsTo(Categoria)):
+//-     propiedad.precio.nombre    -> include: [Precio, Categoria]
+//-     propiedad.categoria.nombre
 //- Si no hay propiedades se muestra un estado vacío con la invitación a publicar.
+
+//- Icono pequeño + texto para las características (habitaciones, parqueo, baños)
+mixin caracteristica(valor, texto)
+  li(class="flex items-center gap-1.5" title=texto)
+    block
+    span(class="font-semibold text-bosque-900")= valor
+    span(class="sr-only")= texto
+
 block contenido
   - const propiedades = locals.propiedades || []
 
@@ -12,42 +25,109 @@ block contenido
     div
       p(class="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-terracota-500") Panel de administración
       h1(class="font-display text-4xl")= pagina
-      p(class="mt-2 text-bosque-900/60") Administra las propiedades que has publicado.
+      if propiedades.length
+        p(class="mt-2 text-bosque-900/60")
+          | Tienes #[span(class="font-semibold text-bosque-900")= propiedades.length]
+          |  #{propiedades.length === 1 ? 'propiedad' : 'propiedades'} registradas.
+      else
+        p(class="mt-2 text-bosque-900/60") Administra las propiedades que has publicado.
 
     a(href="/propiedades/crear" class="group inline-flex items-center justify-center gap-2 rounded-full bg-bosque-900 px-6 py-3.5 font-semibold text-arena-50 transition hover:bg-bosque-800 focus:outline-none focus:ring-4 focus:ring-bosque-900/20")
       svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5" aria-hidden="true")
         path(d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z")
       | Publicar propiedad
 
+  //- Confirmación después de una acción (ej. propiedad eliminada)
+  if locals.mensaje
+    div(id="aviso" role="status" class="mt-8 flex items-start gap-3 rounded-2xl border border-bosque-700/25 bg-bosque-50 p-4 sm:items-center")
+      span(class="flex size-9 shrink-0 items-center justify-center rounded-full bg-bosque-700 text-arena-50" aria-hidden="true")
+        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5")
+          path(fill-rule="evenodd" clip-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z")
+      p(class="flex-1 font-medium text-bosque-800")= locals.mensaje
+      button(type="button" data-cerrar-aviso class="-m-1 cursor-pointer rounded-full p-1.5 text-bosque-800/60 transition hover:bg-bosque-700/10 hover:text-bosque-900" aria-label="Cerrar aviso")
+        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5" aria-hidden="true")
+          path(d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z")
+
   if propiedades.length
-    //- Listado
-    ul(class="mt-10 divide-y divide-arena-200 overflow-hidden rounded-2xl border border-arena-200 bg-white shadow-sm")
+    //- Grid de cards
+    ul(class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3")
       each propiedad in propiedades
-        li(class="flex flex-col gap-4 p-5 sm:flex-row sm:items-center")
-          if propiedad.imagen
-            img(src=`/uploads/${propiedad.imagen}` alt=propiedad.titulo class="h-40 w-full rounded-xl object-cover sm:size-24")
-          else
-            div(class="flex h-40 w-full items-center justify-center rounded-xl bg-arena-100 text-bosque-900/30 sm:size-24")
-              svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-8" aria-hidden="true")
-                path(stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955a1.126 1.126 0 0 1 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25")
+        //- Mientras no tenga imagen, img guarda un texto de relleno: solo la mostramos si está publicada
+        - const tieneImagen = propiedad.publicado && propiedad.img
 
-          div(class="min-w-0 flex-1")
-            div(class="flex flex-wrap items-center gap-2")
-              h2(class="truncate font-display text-xl")= propiedad.titulo
+        li(class="group flex flex-col overflow-hidden rounded-2xl border border-arena-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg")
+          //- Imagen + etiquetas
+          div(class="relative aspect-[4/3] overflow-hidden bg-arena-100")
+            if tieneImagen
+              img(src=`/uploads/${propiedad.img}` alt=propiedad.titulo loading="lazy" class="size-full object-cover transition duration-500 group-hover:scale-105")
+            else
+              div(class="flex size-full flex-col items-center justify-center gap-2 text-bosque-900/30")
+                svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-10" aria-hidden="true")
+                  path(stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z")
+                span(class="text-sm font-medium") Sin imagen
+
+            div(class="absolute inset-x-3 top-3 flex items-start justify-between gap-2")
               if propiedad.publicado
-                span(class="rounded-full bg-bosque-50 px-2.5 py-0.5 text-xs font-semibold text-bosque-700") Publicada
+                span(class="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-bosque-700 shadow-sm backdrop-blur")
+                  span(class="size-1.5 rounded-full bg-bosque-700" aria-hidden="true")
+                  | Publicada
               else
-                span(class="rounded-full bg-arena-100 px-2.5 py-0.5 text-xs font-semibold text-bosque-900/60") Borrador
-            if propiedad.ubicacion
-              p(class="mt-1 truncate text-sm text-bosque-900/60")= propiedad.ubicacion
-            if propiedad.precio
-              p(class="mt-1 font-semibold text-terracota-600")= propiedad.precio
+                span(class="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-terracota-600 shadow-sm backdrop-blur")
+                  span(class="size-1.5 rounded-full bg-terracota-500" aria-hidden="true")
+                  | Borrador
 
-          div(class="flex gap-2 sm:shrink-0")
-            a(href=`/propiedades/editar/${propiedad.id}` class="rounded-full border border-bosque-900/15 px-4 py-2 text-sm font-semibold text-bosque-900 transition hover:bg-arena-100") Editar
-            form(method="POST" action=`/propiedades/eliminar/${propiedad.id}`)
-              input(type="hidden" name="_csrf" value=locals.csrfToken)
-              button(type="submit" class="cursor-pointer rounded-full border border-error-500/30 px-4 py-2 text-sm font-semibold text-error-600 transition hover:bg-error-50") Eliminar
+              if propiedad.categoria && propiedad.categoria.nombre
+                span(class="rounded-full bg-bosque-900/80 px-2.5 py-1 text-xs font-semibold text-arena-50 backdrop-blur")= propiedad.categoria.nombre
+
+          //- Contenido
+          div(class="flex flex-1 flex-col p-5")
+            if propiedad.precio && propiedad.precio.nombre
+              p(class="text-sm font-semibold text-terracota-600")= propiedad.precio.nombre
+
+            h2(class="mt-1 line-clamp-2 font-display text-xl leading-snug")= propiedad.titulo
+
+            if propiedad.calle
+              p(class="mt-2 flex items-start gap-1.5 text-sm text-bosque-900/60")
+                svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="mt-0.5 size-4 shrink-0" aria-hidden="true")
+                  path(fill-rule="evenodd" clip-rule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 1 0 3 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 0 0 2.273 1.765 11.842 11.842 0 0 0 .976.544l.062.029.018.008.006.003ZM10 11.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z")
+                span(class="line-clamp-1")= propiedad.calle
+
+            //- Características
+            ul(class="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-arena-200 pt-4 text-sm text-bosque-900/60")
+              +caracteristica(propiedad.habitaciones, 'Habitaciones')
+                svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-5" aria-hidden="true")
+                  path(stroke-linecap="round" stroke-linejoin="round" d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2m18-2v2M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4M9 10V8.5A1.5 1.5 0 0 1 10.5 7h3A1.5 1.5 0 0 1 15 8.5V10")
+              +caracteristica(propiedad.estacionamiento, 'Estacionamientos')
+                svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-5" aria-hidden="true")
+                  path(stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12")
+              +caracteristica(propiedad.wc, 'Baños')
+                svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-5" aria-hidden="true")
+                  path(stroke-linecap="round" stroke-linejoin="round" d="M4 12h16v2a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-2Zm0 0V5.5A2.5 2.5 0 0 1 6.5 3a2.5 2.5 0 0 1 2.5 2.5M7 19l-1 2m12-2 1 2")
+
+            //- Acciones (mt-auto las empuja al fondo para que todas las cards queden alineadas)
+            //- Grid de 2 columnas: "Agregar imagen" ocupa la fila completa; Editar y Eliminar van lado a lado.
+            //- Todos los botones miden h-10 y no parten el texto (whitespace-nowrap).
+            div(class="mt-auto grid grid-cols-2 gap-2 pt-5")
+              if !propiedad.publicado
+                a(href=`/propiedades/agregar-imagen/${propiedad.id}` class="col-span-2 inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-terracota-500 px-4 text-sm font-semibold text-white transition hover:bg-terracota-600")
+                  svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4" aria-hidden="true")
+                    path(d="M9.25 13.25a.75.75 0 0 0 1.5 0V4.636l2.955 3.129a.75.75 0 0 0 1.09-1.03l-4.25-4.5a.75.75 0 0 0-1.09 0l-4.25 4.5a.75.75 0 1 0 1.09 1.03L9.25 4.636v8.614Z")
+                    path(d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z")
+                  | Agregar imagen
+
+              a(href=`/propiedades/editar/${propiedad.id}` class="inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-bosque-900/15 px-4 text-sm font-semibold text-bosque-900 transition hover:bg-arena-100")
+                svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4" aria-hidden="true")
+                  path(d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z")
+                  path(d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z")
+                | Editar
+
+              //- data-eliminar: confirmarEliminar.js abre el modal antes de enviar
+              form(method="POST" action=`/propiedades/eliminar/${propiedad.id}` data-eliminar data-titulo=propiedad.titulo)
+                input(type="hidden" name="_csrf" value=locals.csrfToken)
+                button(type="submit" class="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-error-500/30 px-4 text-sm font-semibold text-error-600 transition hover:bg-error-50")
+                  svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4" aria-hidden="true")
+                    path(fill-rule="evenodd" clip-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z")
+                  | Eliminar
 
   else
     //- Estado vacío
@@ -62,3 +142,21 @@ block contenido
       a(href="/propiedades/crear" class="group mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-terracota-500 px-6 py-3.5 font-semibold text-white transition hover:bg-terracota-600 focus:outline-none focus:ring-4 focus:ring-terracota-500/20")
         | Publicar mi primera propiedad
         span(class="transition-transform group-hover:translate-x-1" aria-hidden="true") →
+
+  //- Modal de confirmación para eliminar (lo abre confirmarEliminar.js)
+  //- m-auto lo centra: el reset de Tailwind le quita el margen al <dialog>
+  dialog(id="confirmar-eliminar" aria-labelledby="confirmar-eliminar-titulo" class="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl bg-white p-0 text-bosque-900 shadow-2xl backdrop:bg-bosque-900/50 backdrop:backdrop-blur-sm")
+    div(class="p-6 sm:p-8")
+      span(class="flex size-12 items-center justify-center rounded-full bg-error-50 text-error-600 ring-8 ring-error-50/50" aria-hidden="true")
+        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6")
+          path(stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z")
+
+      h2(id="confirmar-eliminar-titulo" class="mt-6 font-display text-2xl") ¿Eliminar esta propiedad?
+      p(class="mt-2 text-bosque-900/70") Vas a eliminar #[span(id="confirmar-eliminar-nombre" class="font-semibold text-bosque-900") esta propiedad]. Se borrarán sus datos y su imagen, y no se puede deshacer.
+
+      div(class="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end")
+        button(type="button" data-cancelar class="cursor-pointer rounded-full border border-bosque-900/15 px-6 py-3 font-semibold text-bosque-900 transition hover:bg-arena-100") Cancelar
+        button(type="button" data-confirmar class="cursor-pointer rounded-full bg-error-600 px-6 py-3 font-semibold text-white transition hover:bg-error-700 focus:outline-none focus:ring-4 focus:ring-error-500/25") Sí, eliminar
+
+block scripts
+  script(src="/js/confirmarEliminar.js")

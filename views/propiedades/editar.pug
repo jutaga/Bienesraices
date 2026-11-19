@@ -1,0 +1,54 @@
+extends ../layout/admin
+include formulario
+
+//- Formulario para editar una propiedad (el formulario está en formulario.pug)
+//- Recibe: pagina, csrfToken, categorias, precios y propiedad (el registro de Sequelize)
+//- Si hubo errores al guardar: errores y datos (lo que escribió el usuario)
+//-
+//- La primera vez se rellena con la propiedad. El formulario usa los nombres
+//- "categoria" y "precio", pero el modelo guarda categoriaId y precioId,
+//- así que aquí se traducen.
+block contenido
+  - const propiedad = locals.propiedad || {}
+  - if (!locals.datos) locals.datos = { titulo: propiedad.titulo, descripcion: propiedad.descripcion, categoria: propiedad.categoriaId, precio: propiedad.precioId, habitaciones: propiedad.habitaciones, estacionamiento: propiedad.estacionamiento, wc: propiedad.wc, calle: propiedad.calle, lat: propiedad.lat, lng: propiedad.lng }
+
+  div(class="mx-auto max-w-3xl")
+    a(href="/mis-propiedades" class="inline-flex items-center gap-1 text-sm font-medium text-bosque-900/60 hover:text-terracota-600")
+      span(aria-hidden="true") ←
+      | Volver a mis propiedades
+
+    p(class="mt-6 mb-2 flex flex-wrap items-center gap-3 text-sm font-semibold uppercase tracking-[0.2em] text-terracota-500")
+      | Editar publicación
+      if propiedad.publicado
+        span(class="inline-flex items-center gap-1.5 rounded-full bg-bosque-50 px-2.5 py-1 text-xs normal-case tracking-normal text-bosque-700")
+          span(class="size-1.5 rounded-full bg-bosque-700" aria-hidden="true")
+          | Publicada
+      else
+        span(class="inline-flex items-center gap-1.5 rounded-full bg-arena-100 px-2.5 py-1 text-xs normal-case tracking-normal text-terracota-600")
+          span(class="size-1.5 rounded-full bg-terracota-500" aria-hidden="true")
+          | Borrador
+    h1(class="font-display text-4xl")= pagina
+    if propiedad.titulo
+      p(class="mt-2 text-bosque-900/60") Estás editando #[span(class="font-semibold text-bosque-900")= propiedad.titulo]. Los cambios se ven en cuanto los guardes.
+
+    //- Edición satisfactoria: el controlador manda mensaje después de guardar
+    if locals.mensaje && !(locals.errores && locals.errores.length)
+      div(role="status" class="mt-8 flex flex-col gap-4 rounded-2xl border border-bosque-700/25 bg-bosque-50 p-5 sm:flex-row sm:items-center sm:justify-between")
+        div(class="flex items-start gap-3")
+          span(class="flex size-10 shrink-0 items-center justify-center rounded-full bg-bosque-700 text-arena-50" aria-hidden="true")
+            svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5")
+              path(fill-rule="evenodd" clip-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z")
+          div
+            p(class="font-semibold text-bosque-900") Cambios guardados
+            p(class="mt-0.5 text-sm text-bosque-800/80")= locals.mensaje
+        a(href="/mis-propiedades" class="inline-flex shrink-0 items-center justify-center gap-1 rounded-full bg-bosque-900 px-5 py-2.5 text-sm font-semibold text-arena-50 transition hover:bg-bosque-800")
+          | Ver mis propiedades
+          span(aria-hidden="true") →
+
+    +formularioPropiedad(`/propiedades/editar/${propiedad.id}`, "Guardar cambios")
+
+block styles
+  +estilosMapa()
+
+block scripts
+  +scriptsMapa()

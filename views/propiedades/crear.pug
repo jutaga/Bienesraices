@@ -1,16 +1,11 @@
-extends ../layout/index
-include ../mixins/campo
+extends ../layout/admin
+include formulario
 
-//- Formulario para publicar una propiedad
+//- Formulario para publicar una propiedad (el formulario está en formulario.pug)
 //- Recibe: pagina, csrfToken, categorias y precios (de la base de datos)
 //-   categorias y precios -> registros de Sequelize con { id, nombre }
 //- Si hubo errores al enviar: errores y datos (lo que escribió el usuario)
 block contenido
-  //- El mixin +selector espera [{ valor, texto }]: convertimos { id, nombre }
-  - const opcionesCategorias = (locals.categorias || []).map((c) => ({ valor: c.id, texto: c.nombre }))
-  - const opcionesPrecios = (locals.precios || []).map((p) => ({ valor: p.id, texto: p.nombre }))
-  - const cantidades = Array.from({ length: 11 }, (_, i) => ({ valor: i, texto: i === 10 ? "10 o más" : String(i) }))
-
   div(class="mx-auto max-w-3xl")
     a(href="/mis-propiedades" class="inline-flex items-center gap-1 text-sm font-medium text-bosque-900/60 hover:text-terracota-600")
       span(aria-hidden="true") ←
@@ -20,82 +15,10 @@ block contenido
     h1(class="font-display text-4xl")= pagina
     p(class="mt-2 text-bosque-900/60") Completa la información de tu propiedad para publicarla.
 
-    form(method="POST" action="/propiedades/crear" class="mt-10 space-y-8" novalidate)
-      //- Token CSRF: protege el formulario de envíos desde otros sitios
-      input(type="hidden" name="_csrf" value=csrfToken)
-      +alerta()
+    +formularioPropiedad("/propiedades/crear", "Publicar propiedad")
 
-      //- Información general
-      section(class="space-y-5 rounded-2xl border border-arena-200 bg-white p-6 shadow-sm sm:p-8")
-        div
-          h2(class="font-display text-2xl") Información general
-          p(class="mt-1 text-sm text-bosque-900/60") Lo primero que verán los interesados.
-
-        +campo("titulo", "Título del anuncio", "text", "Ej. Casa en la playa con alberca")
-        +areaTexto("descripcion", "Descripción", "Describe la propiedad: espacios, acabados, lo que la hace especial…", 5)
-
-        div(class="grid gap-5 sm:grid-cols-2")
-          +selector("categoria", "Categoría", opcionesCategorias, "Selecciona una categoría")
-          +selector("precio", "Rango de precio", opcionesPrecios, "Selecciona un rango")
-
-      //- Características
-      section(class="space-y-5 rounded-2xl border border-arena-200 bg-white p-6 shadow-sm sm:p-8")
-        div
-          h2(class="font-display text-2xl") Características
-          p(class="mt-1 text-sm text-bosque-900/60") Ayuda a los interesados a filtrar su búsqueda.
-
-        div(class="grid gap-5 sm:grid-cols-3")
-          +selector("habitaciones", "Habitaciones", cantidades, "Selecciona")
-          +selector("estacionamiento", "Estacionamientos", cantidades, "Selecciona")
-          +selector("wc", "Baños", cantidades, "Selecciona")
-
-      //- Ubicación
-      //- El mapa lo controla tu JS: al mover el pin debe llenar
-      //- los inputs ocultos (calle, lat, lng) y el texto de #calle-texto
-      - const datosUbicacion = locals.datos || {}
-      - const errorUbicacion = (locals.errores || []).find((e) => ["calle", "lat", "lng"].includes(e.path))
-      section(class="space-y-5 rounded-2xl border border-arena-200 bg-white p-6 shadow-sm sm:p-8")
-        div
-          h2(class="font-display text-2xl") Ubicación
-          p(class="mt-1 text-sm text-bosque-900/60") Arrastra el pin hasta donde se encuentra la propiedad.
-
-        div(
-          id="mapa"
-          class=(errorUbicacion ? "isolate h-96 overflow-hidden rounded-xl border border-error-500 ring-4 ring-error-500/15" : "isolate h-96 overflow-hidden rounded-xl border border-arena-200")
-          aria-label="Mapa para elegir la ubicación de la propiedad"
-        )
-
-        //- Dirección elegida en el mapa
-        div(class="flex items-start gap-3 rounded-xl bg-arena-100 px-4 py-3")
-          svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="mt-0.5 size-5 shrink-0 text-terracota-500" aria-hidden="true")
-            path(fill-rule="evenodd" clip-rule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 1 0 3 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 0 0 2.273 1.765 11.842 11.842 0 0 0 .976.544l.062.029.018.008.006.003ZM10 11.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z")
-          div(class="min-w-0")
-            p(class="text-xs font-semibold uppercase tracking-wider text-bosque-900/50") Dirección
-            p(id="calle-texto" class="mt-0.5 font-medium text-bosque-900")= datosUbicacion.calle || "Mueve el pin para elegir la dirección"
-
-        if errorUbicacion
-          p(class="text-sm font-medium text-error-600")= errorUbicacion.msg
-
-        input(type="hidden" name="calle" id="calle" value=datosUbicacion.calle)
-        input(type="hidden" name="lat" id="lat" value=datosUbicacion.lat)
-        input(type="hidden" name="lng" id="lng" value=datosUbicacion.lng)
-
-      //- Acciones
-      div(class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end")
-        a(href="/mis-propiedades" class="flex items-center justify-center rounded-full border border-bosque-900/15 px-6 py-3.5 font-semibold text-bosque-900 transition hover:bg-arena-100") Cancelar
-        div(class="sm:w-60")
-          +boton("Publicar propiedad")
-
-//- Estilos del mapa (sin el CSS de Leaflet el mapa sale roto)
 block styles
-  link(rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css")
-  link(rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@2.2.13/dist/esri-leaflet-geocoder.css")
+  +estilosMapa()
 
-//- Librerías del mapa
 block scripts
-  script(src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js")
-  script(src="https://unpkg.com/esri-leaflet@3.0.8/dist/esri-leaflet.js")
-  script(src="https://unpkg.com/esri-leaflet-geocoder@2.2.13/dist/esri-leaflet-geocoder.js")
-  script(src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-geosearch/2.7.0/bundle.min.js")
-  //- Tu script del mapa (descomenta cuando lo crees en public/js/mapa.js)
-  script(src="/js/mapa.js")
+  +scriptsMapa()

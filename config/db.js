@@ -1,6 +1,6 @@
 // Sequelize es un ORM: permite trabajar con la base de datos usando
 // objetos y métodos de JavaScript en lugar de escribir SQL a mano.
-import Sequelize from 'sequelize';
+import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 
 
