@@ -1,4 +1,4 @@
-import { Categoria, Precio, Propiedad } from "../models/index.js";
+import { Categoria, Precio, Propiedad, Usuario } from "../models/index.js";
 import { validationResult } from "express-validator";
 import { unlink } from "node:fs/promises";
 
@@ -276,6 +276,24 @@ const eliminar = async (req, res) => {
   return res.redirect("/mis-propiedades?eliminada=1");
 };
 
+//Muestra una propiedad
+const mostrarPropiedad = async (req, res) => {
+  const { id } = req.params;
+
+  //validar que exista
+  const propiedad = await Propiedad.findByPk(id, {
+    include: [Categoria, Precio, { model: Usuario.scope("eliminarPassword") }],
+  });
+
+  if (!propiedad) return res.redirect("/404-not-found");
+
+  res.render("propiedades/mostrar", {
+    propiedad,
+    pagina: propiedad.titulo,
+    csrfToken: req.csrfToken(),
+  });
+};
+
 export {
   admin,
   crearPropiedad,
@@ -285,4 +303,5 @@ export {
   editar,
   editarPropiedad,
   eliminar,
+  mostrarPropiedad,
 };
