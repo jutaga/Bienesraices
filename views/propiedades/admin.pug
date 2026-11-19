@@ -84,7 +84,12 @@ block contenido
             if propiedad.precio && propiedad.precio.nombre
               p(class="text-sm font-semibold text-terracota-600")= propiedad.precio.nombre
 
-            h2(class="mt-1 line-clamp-2 font-display text-xl leading-snug")= propiedad.titulo
+            //- El título lleva al detalle público (solo si ya está publicada: los borradores no tienen detalle)
+            h2(class="mt-1 line-clamp-2 font-display text-xl leading-snug")
+              if propiedad.publicado
+                a(href=`/propiedad/${propiedad.id}` class="decoration-terracota-500 decoration-2 underline-offset-4 transition hover:text-terracota-600 hover:underline")= propiedad.titulo
+              else
+                = propiedad.titulo
 
             if propiedad.calle
               p(class="mt-2 flex items-start gap-1.5 text-sm text-bosque-900/60")

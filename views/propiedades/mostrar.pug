@@ -1,0 +1,155 @@
+extends ../layout/index
+include ../mixins/campo
+
+//- Página pública con el detalle de una propiedad
+//- Recibe:
+//-   pagina      -> el título de la propiedad (para la pestaña del navegador)
+//-   propiedad   -> registro de Sequelize con include: [Categoria, Precio, Usuario]
+//-                  usa: id, titulo, descripcion, img, habitaciones, estacionamiento, wc,
+//-                       calle, lat, lng, createdAt, categoria.nombre, precio.nombre, usuario.nombre
+//-   csrfToken   -> para el formulario de contacto
+//- Opcionales:
+//-   usuario     -> el usuario con sesión iniciada (si no hay sesión, no lo mandes)
+//-   esVendedor  -> true si la propiedad es del usuario con sesión
+//-   enviado     -> true después de enviar el mensaje correctamente
+//-   errores / datos -> si el mensaje tuvo errores (datos = lo que escribió)
+
+//- Tarjeta pequeña de característica (habitaciones, estacionamientos, baños)
+mixin dato(valor, texto)
+  li(class="flex items-center gap-3 rounded-xl border border-arena-200 bg-white p-4")
+    span(class="flex size-11 shrink-0 items-center justify-center rounded-full bg-arena-100 text-terracota-500" aria-hidden="true")
+      block
+    div
+      p(class="font-display text-2xl leading-none")= valor
+      p(class="mt-1 text-sm text-bosque-900/60")= texto
+
+block contenido
+  - const propiedad = locals.propiedad || {}
+  - const categoria = propiedad.categoria ? propiedad.categoria.nombre : null
+  - const precio = propiedad.precio ? propiedad.precio.nombre : null
+  - const vendedor = propiedad.usuario ? propiedad.usuario.nombre : null
+  - const fecha = propiedad.createdAt ? new Date(propiedad.createdAt).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" }) : null
+
+  //- Migas de pan
+  nav(class="flex flex-wrap items-center gap-2 text-sm text-bosque-900/60" aria-label="Ruta")
+    a(href="/" class="hover:text-terracota-600") Inicio
+    span(aria-hidden="true") /
+    if categoria
+      span= categoria
+      span(aria-hidden="true") /
+    span(class="line-clamp-1 font-medium text-bosque-900" aria-current="page")= propiedad.titulo
+
+  //- Encabezado
+  div(class="mt-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between")
+    div(class="max-w-3xl")
+      if categoria
+        span(class="inline-block rounded-full bg-bosque-900 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-arena-50")= categoria
+      h1(class="mt-3 font-display text-4xl leading-tight sm:text-5xl")= propiedad.titulo
+      if propiedad.calle
+        p(class="mt-3 flex items-start gap-1.5 text-bosque-900/70")
+          svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="mt-0.5 size-5 shrink-0 text-terracota-500" aria-hidden="true")
+            path(fill-rule="evenodd" clip-rule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 1 0 3 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 0 0 2.273 1.765 11.842 11.842 0 0 0 .976.544l.062.029.018.008.006.003ZM10 11.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z")
+          = propiedad.calle
+    if precio
+      div(class="lg:text-right")
+        p(class="text-sm font-semibold uppercase tracking-[0.2em] text-terracota-500") Rango de precio
+        p(class="mt-1 font-display text-3xl")= precio
+
+  //- Imagen principal
+  figure(class="mt-8 overflow-hidden rounded-3xl bg-arena-100 shadow-sm")
+    if propiedad.img
+      img(src=`/uploads/${propiedad.img}` alt=`Foto de ${propiedad.titulo}` class="aspect-[4/3] w-full object-cover sm:aspect-[16/9]")
+    else
+      div(class="flex aspect-[16/9] items-center justify-center text-bosque-900/30") Sin imagen
+
+  //- Contenido + tarjeta lateral
+  div(class="mt-10 grid gap-10 lg:grid-cols-[1fr_22rem]")
+    div(class="min-w-0 space-y-10")
+      //- Características
+      section
+        h2(class="font-display text-2xl") Características
+        ul(class="mt-5 grid gap-3 sm:grid-cols-3")
+          +dato(propiedad.habitaciones, propiedad.habitaciones === 1 ? "Habitación" : "Habitaciones")
+            svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6")
+              path(stroke-linecap="round" stroke-linejoin="round" d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2m18-2v2M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4M9 10V8.5A1.5 1.5 0 0 1 10.5 7h3A1.5 1.5 0 0 1 15 8.5V10")
+          +dato(propiedad.estacionamiento, propiedad.estacionamiento === 1 ? "Estacionamiento" : "Estacionamientos")
+            svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6")
+              path(stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12")
+          +dato(propiedad.wc, propiedad.wc === 1 ? "Baño" : "Baños")
+            svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6")
+              path(stroke-linecap="round" stroke-linejoin="round" d="M4 12h16v2a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-2Zm0 0V5.5A2.5 2.5 0 0 1 6.5 3a2.5 2.5 0 0 1 2.5 2.5M7 19l-1 2m12-2 1 2")
+
+      //- Descripción
+      if propiedad.descripcion
+        section
+          h2(class="font-display text-2xl") Descripción
+          p(class="mt-4 whitespace-pre-line text-lg leading-relaxed text-bosque-900/80")= propiedad.descripcion
+
+      //- Ubicación (el mapa lo dibuja mostrarMapa.js con data-lat y data-lng)
+      section
+        h2(class="font-display text-2xl") Ubicación
+        if propiedad.calle
+          p(class="mt-2 text-bosque-900/60")= propiedad.calle
+        div(
+          id="mapa-detalle"
+          data-lat=propiedad.lat
+          data-lng=propiedad.lng
+          data-titulo=propiedad.titulo
+          class="isolate mt-5 h-80 overflow-hidden rounded-2xl border border-arena-200 bg-arena-100"
+          aria-label="Mapa con la ubicación de la propiedad"
+        )
+
+    //- Tarjeta lateral: contacto
+    aside(class="lg:sticky lg:top-6 lg:self-start")
+      div(class="rounded-2xl border border-arena-200 bg-white p-6 shadow-sm")
+        if precio
+          p(class="text-sm text-bosque-900/60") Precio
+          p(class="font-display text-2xl")= precio
+
+        if vendedor
+          div(class="mt-5 flex items-center gap-3 border-t border-arena-200 pt-5")
+            span(class="flex size-11 items-center justify-center rounded-full bg-bosque-900 font-display text-lg text-arena-50" aria-hidden="true")= vendedor.charAt(0).toUpperCase()
+            div
+              p(class="text-xs font-semibold uppercase tracking-wider text-bosque-900/50") Publicado por
+              p(class="font-semibold")= vendedor
+
+        div(class="mt-5 border-t border-arena-200 pt-5")
+          if locals.esVendedor
+            //- El dueño no se escribe a sí mismo: le damos acceso a editar
+            p(class="text-sm text-bosque-900/70") Esta es una de tus propiedades.
+            a(href=`/propiedades/editar/${propiedad.id}` class="mt-4 flex w-full items-center justify-center rounded-full border border-bosque-900/15 px-6 py-3 font-semibold transition hover:bg-arena-100") Editar propiedad
+
+          else if locals.enviado
+            div(role="status" class="flex gap-3 rounded-xl bg-bosque-50 p-4 text-sm text-bosque-800")
+              svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="mt-0.5 size-5 shrink-0 text-bosque-700" aria-hidden="true")
+                path(fill-rule="evenodd" clip-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.061 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z")
+              div
+                p(class="font-semibold") Mensaje enviado
+                p(class="mt-0.5 text-bosque-800/80") El vendedor te responderá a tu email.
+
+          else if locals.usuario
+            h2(class="font-display text-xl") ¿Te interesa?
+            p(class="mt-1 text-sm text-bosque-900/60") Escríbele al vendedor. Le compartiremos tu email.
+            form(method="POST" action=`/propiedades/${propiedad.id}` class="mt-4 space-y-4" novalidate)
+              input(type="hidden" name="_csrf" value=locals.csrfToken)
+              +alerta()
+              +areaTexto("mensaje", "Tu mensaje", "Hola, me interesa esta propiedad. ¿Podemos agendar una visita?", 4)
+              +boton("Enviar mensaje")
+
+          else
+            h2(class="font-display text-xl") ¿Te interesa?
+            p(class="mt-1 text-sm text-bosque-900/60") Inicia sesión para escribirle al vendedor.
+            a(href="/auth/login" class="mt-4 flex w-full items-center justify-center rounded-full bg-bosque-900 px-6 py-3.5 font-semibold text-arena-50 transition hover:bg-bosque-800") Iniciar sesión
+            p(class="mt-3 text-center text-sm text-bosque-900/60")
+              | ¿No tienes cuenta? #[a(href="/auth/registro" class="font-semibold text-terracota-600 hover:underline") Crea una]
+
+      if fecha
+        p(class="mt-4 text-center text-xs text-bosque-900/50") Publicada el #{fecha}
+
+block styles
+  link(rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css")
+
+block scripts
+  script(src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js")
+  //- Dibuja el mapa con el pin (src/js/mostrarMapa.js compilado por webpack)
+  script(src="/js/mostrarMapa.js")
