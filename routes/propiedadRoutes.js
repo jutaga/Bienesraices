@@ -5,6 +5,9 @@ import {
   guardarPropiedad,
   agregarImagen,
   almacenarImagen,
+  editar,
+  editarPropiedad,
+  eliminar
 } from "../controllers/propiedadController.js";
 import { validarPropiedad } from "./validaciones/propiedadValidaciones.js";
 import { protegerRuta } from "../middleware/protegerRutas.js";
@@ -29,5 +32,10 @@ router.post(
   upload.single("imagen"),
   almacenarImagen,
 );
+
+router.get("/propiedades/editar/:id", protegerRuta, editar);
+router.post("/propiedades/editar/:id", protegerRuta, validarPropiedad, editarPropiedad );
+
+router.post("/propiedades/eliminar/:id", protegerRuta, eliminar)
 
 export default router;
